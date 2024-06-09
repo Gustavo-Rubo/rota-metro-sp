@@ -48,6 +48,10 @@ def index2name(index, platforms):
 def get_equivalent_platforms():
     return 0
 
+def is_node_leaf(index, graph_simple):
+    direct_connections = np.count_nonzero(graph_simple != np.inf)
+    return True if direct_connections <= 2 else False
+
 def measure_distance(graph, platforms, route):
     distance = 0
     current_i = name2index(route[0], platforms)
@@ -61,16 +65,21 @@ def measure_distance(graph, platforms, route):
     return distance
 
 
+def get_next_platform()
+    # get list of direct unvisited options
+    # only one option, take that
+
+
 if __name__ == "__main__":
     # stations_visitadas = []
     # stations_nao_visitadas = []
 
-    filename = path.join('problems', 'metro-sp-azul verde.csv')
+    filename = path.join('problems', 'complete.csv')
 
     graph_simple, platforms = read_graph(filename)
     graph_complete = dijkstra(graph_simple)
 
-    sample_route = sample_routes.AZUL_VERDE
+    sample_route = sample_routes.COMPLETE_MANUAL
     sample_route_distance = measure_distance(graph_complete, platforms, sample_route)
 
     print(sample_route_distance)
