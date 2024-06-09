@@ -3,39 +3,74 @@ from os import path
 import numpy as np
 
 from dijkstra import dijkstra
+import sample_routes
 
-transicoes = {}
-estacoes = []
-plataformas = []
-grafo = []
+def read_graph(filename):
+    graph = []
+    platforms = []
+    # stations = []
 
-estacoes_visitadas = []
-estacoes_nao_visitadas = []
+    with open(filename) as file:
+        reader = csv.reader(file, delimiter=',')
+        for row in reader:
+            platforms.append(','.join([row[0], row[1]]))
+            platforms.append(','.join([row[2], row[3]]))
+            # stations.append(row[1])
+            # stations.append(row[3])
+        
+        platforms = np.unique(platforms)
+        # stations = np.unique(stations)
 
-with open(path.join('problems', 'metro-sp-azul verde.csv')) as arquivo:
-    leitor = csv.reader(arquivo, delimiter=',')
-    for row in leitor:
-        plataformas.append(','.join([row[0], row[1]]))
-        plataformas.append(','.join([row[2], row[3]]))
-        estacoes.append(row[1])
-        estacoes.append(row[3])
-    
-    plataformas = np.unique(plataformas)
-    estacoes = np.unique(estacoes)
+        graph = np.ones([len(platforms), len(platforms)]) * np.inf
+        for i in range(len(graph)): graph[i][i] = 0
 
-    grafo = np.ones([len(plataformas), len(plataformas)]) * np.inf
-    for i in range(len(grafo)): grafo[i][i] = 0
+        file.seek(0)
+        for row in reader:
+            platform1 = ','.join([row[0], row[1]])
+            platform2 = ','.join([row[2], row[3]])
 
-    arquivo.seek(0)
-    for row in leitor:
-        plataforma1 = ','.join([row[0], row[1]])
-        plataforma2 = ','.join([row[2], row[3]])
+            i = name2index(platform1, platforms)
+            j = name2index(platform2, platforms)
 
-        i = np.where(plataformas == plataforma1)[0][0]
-        j = np.where(plataformas == plataforma2)[0][0]
+            distance = float(row[4].replace(',', '.'))
+            graph[i][j] = distance
+            graph[j][i] = distance
 
-        distancia = float(row[4].replace(',', '.'))
-        grafo[i][j] = distancia
-        grafo[j][i] = distancia
+    return graph, platforms
 
-    dijkstra(grafo)
+
+def name2index(name, platforms):
+    return np.where(platforms == name)[0][0]
+
+def index2name(index, platforms):
+    return platforms[index]
+
+def get_equivalent_platforms():
+    return 0
+
+def measure_distance(graph, platforms, route):
+    distance = 0
+    current_i = name2index(route[0], platforms)
+    for next_platform in route[1:]:
+        next_i = name2index(next_platform, platforms)
+        distance += graph[current_i][next_i]
+        # print(graph[current_i][next_i], current_i, next_i)
+
+        current_i = next_i
+
+    return distance
+
+
+if __name__ == "__main__":
+    # stations_visitadas = []
+    # stations_nao_visitadas = []
+
+    filename = path.join('problems', 'metro-sp-azul verde.csv')
+
+    graph_simple, platforms = read_graph(filename)
+    graph_complete = dijkstra(graph_simple)
+
+    sample_route = sample_routes.AZUL_VERDE
+    sample_route_distance = measure_distance(graph_complete, platforms, sample_route)
+
+    print(sample_route_distance)

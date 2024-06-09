@@ -7,7 +7,8 @@ grafo = [
     [9, 9, 3, 0]
 ]
 
-def dijkstra(graph):
+def dijkstra(graph_simple):
+    graph = graph_simple.copy()
     for start in range(len(graph)-1):
         unvisited = [i for i in range(len(graph)) if i != start]
 
@@ -27,5 +28,7 @@ def dijkstra(graph):
                 if (distance2 < distance1):
                     graph[start][u] = distance2
                     graph[u][start] = distance2
+    
+    return graph
 
     # print('\n'.join([','.join([f'{n:.1f}' for n in row]) for row in grafo]))
