@@ -5,9 +5,10 @@ BLUE_GREEN = [
     '2 - verde,vila prudente'
 ]
 
-COMPLETE_MANUAL = [
+COMPLETE_MANUAL1 = [
     '7 - rubi,jundiaí',
-    '8 - diamante,pres. altino',
+    '8 - diamante,júlio prestes',
+    # '8 - diamante,pres. altino',
     '8 - diamante,amador bueno',
     '8 - diamante,osasco',
     '9 - esmeralda,mendes - vila natal',
@@ -15,10 +16,34 @@ COMPLETE_MANUAL = [
     '1 - azul,jabaquara',
     '1 - azul,sé',
     '3 - vermelha,mal. deodoro',
-    '3 - vermelha,república',
+    # '3 - vermelha,república',
     '4 - amarela,vila sônia',
-    '4 - amarela,paulista',
+    # '4 - amarela,paulista',
     '2 - verde,vila madalena',
+    '15 - prata,vila prudente',
+    '15 - prata,jardim colonial',
+    '10 - turquesa,rio grande da serra',
+    '3 - vermelha,brás',
+    '3 - vermelha,tatuapé',
+    '3 - vermelha,vila matilde',
+    '3 - vermelha,corinthians - itaquera',
+    '11 - coral,estudantes',
+    '12 - safira,calmon viana',
+    '13 - jade,aeroporto - guarulhos',
+    '3 - vermelha,brás',
+    '3 - vermelha,sé',
+    '1 - azul,tucuruvi',
+]
+
+COMPLETE_MANUAL2 = [
+    '7 - rubi,jundiaí',
+    '8 - diamante,júlio prestes',
+    '8 - diamante,amador bueno',
+    '8 - diamante,osasco',
+    '9 - esmeralda,mendes - vila natal',
+    '5 - lilás,capão redondo',
+    '1 - azul,jabaquara',
+    '2 - verde,ana rosa',
     '15 - prata,vila prudente',
     '15 - prata,jardim colonial',
     '10 - turquesa,rio grande da serra',
@@ -31,8 +56,79 @@ COMPLETE_MANUAL = [
     '13 - jade,aeroporto - guarulhos',
     '12 - safira,brás',
     '1 - azul,sé',
-    '1 - azul,tucuruvi'
+    '1 - azul,paraíso',
+    '2 - verde,vila madalena',
+    '4 - amarela,vila sônia',
+    '3 - vermelha,mal. deodoro',
+    '3 - vermelha,sé',
+    '1 - azul,tucuruvi',
 ]
+
+BF_PINH = [
+    '7 - rubi,palmeiras - barra funda',
+    '8 - diamante,amador bueno',
+    '9 - esmeralda,pinheiros',
+]
+
+BF_REP = [
+    '7 - rubi,palmeiras - barra funda',
+    '3 - vermelha,república',
+]
+
+BF_LUZ = [
+    '7 - rubi,palmeiras - barra funda',
+    '1 - azul,luz',
+]
+
+PINH_CONS = [
+    '9 - esmeralda,pinheiros',
+    '2 - verde,consolação',
+]
+
+PINH_PARAISO = [
+    '9 - esmeralda,pinheiros',
+    '9 - esmeralda,mendes - vila natal',
+    '5 - lilás,capão redondo',
+    '1 - azul,jabaquara',
+    '1 - azul,paraíso',
+]
+
+REP_CONS = [
+    '3 - vermelha,república',
+    '2 - verde,consolação',
+]
+
+REP_LUZ = [
+    '3 - vermelha,república',
+    '1 - azul,luz',
+]
+
+REP_SE = [
+    '3 - vermelha,república',
+    '3 - vermelha,sé',
+]
+
+LUZ_SE = [
+    '1 - azul,luz',
+    '3 - vermelha,sé',
+]
+
+LUZ_BRAS = [
+    '1 - azul,luz',
+    '3 - vermelha,brás',
+]
+
+SE_PARAISO = [
+    '3 - vermelha,sé',
+    '1 - azul,paraíso',
+]
+
+SE_BRAS = [
+    '3 - vermelha,sé',
+    '3 - vermelha,brás',
+]
+
+PARAISO_BRAS = []
 
 # '1 - azul,ana rosa',
 # '1 - azul,jabaquara',
