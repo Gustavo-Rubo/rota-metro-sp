@@ -5,72 +5,90 @@ import numpy as np
 from dijkstra import dijkstra
 import sample_routes
 
+
+# WHEN TO USE PLATFORM NAMES VS INDEX:
+# names should only be for input and output.
+# everywhere else the program should be using indexes
+# variables that store names should always be named *_names or *_n
+
+
 def read_graph(filename):
-    graph = []
-    platforms = []
-    # stations = []
+    global PLATFORM_NAMES
+    global GRAPH_SIMPLE
 
     with open(filename) as file:
         reader = csv.reader(file, delimiter=',')
         for row in reader:
-            platforms.append(','.join([row[0], row[1]]))
-            platforms.append(','.join([row[2], row[3]]))
-        
-        platforms = np.unique(platforms)
+            PLATFORM_NAMES.append(','.join([row[0], row[1]]))
+            PLATFORM_NAMES.append(','.join([row[2], row[3]]))
 
-        graph = np.ones([len(platforms), len(platforms)]) * np.inf
-        # for i in range(len(graph)): graph[i][i] = 0
+        PLATFORM_NAMES = np.unique(PLATFORM_NAMES)
+
+        GRAPH_SIMPLE = np.ones(
+            [len(PLATFORM_NAMES), len(PLATFORM_NAMES)]) * np.inf
+        # for i in range(len(GRAPH_SIMPLE)): GRAPH_SIMPLE[i][i] = 0
 
         file.seek(0)
         for row in reader:
             platform1 = ','.join([row[0], row[1]])
             platform2 = ','.join([row[2], row[3]])
 
-            i = name2index(platform1, platforms)
-            j = name2index(platform2, platforms)
+            i = name2index(platform1)
+            j = name2index(platform2)
 
             distance = float(row[4].replace(',', '.'))
-            graph[i][j] = distance
-            graph[j][i] = distance
-
-    return graph, platforms
+            GRAPH_SIMPLE[i][j] = distance
+            GRAPH_SIMPLE[j][i] = distance
 
 
-def name2index(name, platforms):
-    return np.where(platforms == name)[0][0]
+def memoize_equivalent_platforms():
+    global EQUIVALENT_PLATFORMS
 
-def index2name(index, platforms):
-    return platforms[index]
-
-def get_station(platform):
-    return platform.split(',')[1]
-
-def memoize_equivalent_platforms(platforms):
-    equivalent_platforms = [[] for _ in range(len(platforms))]
-    for i, platform_i in enumerate(platforms):
-        station_i = get_station(platform_i)
-        for j in range(i+1, len(platforms)):
-            platform_j = platforms[j]
-            station_j = get_station(platform_j)
+    EQUIVALENT_PLATFORMS = [[] for _ in range(len(PLATFORM_NAMES))]
+    for i, platform_name_i in enumerate(PLATFORM_NAMES):
+        station_i = get_station_from_name(platform_name_i)
+        for j in range(i+1, len(PLATFORM_NAMES)):
+            platform_name_j = PLATFORM_NAMES[j]
+            station_j = get_station_from_name(platform_name_j)
             if station_i == station_j:
-                equivalent_platforms[i].append(platform_j)
-                equivalent_platforms[j].append(platform_i)
-    
-    return equivalent_platforms
+                EQUIVALENT_PLATFORMS[i].append(name2index(platform_name_j))
+                EQUIVALENT_PLATFORMS[j].append(name2index(platform_name_i))
 
-def is_node_leaf(index, graph_simple):
-    direct_connections = np.count_nonzero(graph_simple[index] != np.inf)
+
+def name2index(name):
+    return np.where(PLATFORM_NAMES == name)[0][0]
+
+
+def index2name(index):
+    return PLATFORM_NAMES[index]
+
+
+def route_name2index(route_names):
+    return [name2index(name) for name in route_names]
+
+
+def route_index2name(route_names):
+    # TODO
+    return [index2name(index) for index in route]
+
+
+def get_station_from_name(platform_name):
+    return platform_name.split(',')[1]
+
+
+def is_node_leaf(index):
+    direct_connections = np.count_nonzero(GRAPH_SIMPLE[index] != np.inf)
     return True if direct_connections <= 1 else False
 
-def measure_distance(graph, platforms, route):
+
+def measure_distance(route):
     distance = 0
-    current_i = name2index(route[0], platforms)
-    for next_platform in route[1:]:
-        next_i = name2index(next_platform, platforms)
-        distance += graph[current_i][next_i]
+    current = route[0]
+    for next in route[1:]:
+        distance += GRAPH_COMPLETE[current][next]
         # print(graph[current_i][next_i], current_i, next_i)
 
-        current_i = next_i
+        current = next
 
     return distance
 
@@ -84,80 +102,88 @@ def get_next_platforms():
 
     return
 
-def add_to_route(next_platform_i, route, visited, equivalent_platforms):
-    route.append(next_platform)
-    if next_platform not in visited:
-        visited.append(next_platform)
-        visited.extend(equivalent_platforms[name2index(next_platform, platforms)])
 
-    route.append(index2name(next_platform_i, platforms))
+def add_to_route(next, route, visited):
+    route.append(next)
+    if next not in visited:
+        visited.append(next)
+        visited.extend(EQUIVALENT_PLATFORMS[next])
+
 
 if __name__ == "__main__":
+    global PLATFORM_NAMES
+    global GRAPH_SIMPLE
+    global GRAPH_COMPLETE
+    global EQUIVALENT_PLATFORMS
+
+    PLATFORM_NAMES = []
+    GRAPH_SIMPLE = []
+    GRAPH_COMPLETE = []
+    EQUIVALENT_PLATFORMS = []
+
     filename = path.join('problems', 'complete.csv')
     # filename = path.join('problems', 'blue_green.csv')
 
-    graph_simple, platforms = read_graph(filename)
-    graph_complete = dijkstra(graph_simple)
-    equivalent_platforms = memoize_equivalent_platforms(platforms)
+    read_graph(filename)
+    GRAPH_COMPLETE = dijkstra(GRAPH_SIMPLE)
+    memoize_equivalent_platforms()
 
     # sample_route = sample_routes.BLUE_GREEN
-    sample_route = sample_routes.COMPLETE_MANUAL1
-    sample_route_distance1 = measure_distance(graph_complete, platforms, sample_route)
-    sample_route = sample_routes.COMPLETE_MANUAL2
-    sample_route_distance2 = measure_distance(graph_complete, platforms, sample_route)
+    sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
+    sample_route_distance1 = measure_distance(sample_route1)
+    sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
+    sample_route_distance2 = measure_distance(sample_route2)
 
     distance_sum = 0
     route = []
     visited = []
-    start = '7 - rubi,jundiaí'
+    start = name2index('7 - rubi,jundiaí')
     # start = '1 - azul,tucuruvi'
 
-    route.append(start)
-    if start not in visited:
-        visited.append(start)
-        visited.extend(equivalent_platforms[name2index(start, platforms)]
-)
+    add_to_route(start, route, visited)
     solutions = []
     stack = []
 
-    while(len(visited) < len(platforms)):
+    while (len(visited) < len(PLATFORM_NAMES)):
         # get list of direct unvisited options
         # if only one option, return that
         # if no direct unvisited (no options), greedy on global
         # if leaf nodes + 1 option, return leaf nodes then option
         # if more than one unvisited non leaf option, store [distance, route, visited, [options]] in the stack
-        current_platform = route[-1]
-        current_i = name2index(current_platform, platforms)
-        next_platform_i = -1
+        current = route[-1]
+        next = -1
 
-        connections_complete = graph_complete[current_i].copy()
-        connections_simple = graph_simple[current_i].copy()
+        connections_complete = GRAPH_COMPLETE[current].copy()
+        connections_simple = GRAPH_SIMPLE[current].copy()
         for v in visited:
             # this may not be necessary if i make distance infinite directly on the whole graph column every time a station is visited
-            connections_complete[name2index(v, platforms)] = np.inf
-            connections_simple[name2index(v, platforms)] = np.inf
-        
-        direct_connections_i = np.where(connections_simple != np.inf)[0]
-        if (len(direct_connections_i == 1)):
-            next_platform_i = direct_connections_i[0]
-        elif(len(direct_connections_i == 0)):
-            next_platform_i = connections_complete.argmin()
+            connections_complete[v] = np.inf
+            connections_simple[v] = np.inf
+
+        direct_connections = np.where(connections_simple != np.inf)[0]
+        if (len(direct_connections) == 1):
+            next = direct_connections[0]
+        elif (len(direct_connections) == 0):
+            next = connections_complete.argmin()
         else:
-            leaf_nodes_i = [d_c_i for d_c_i in direct_connections_i if is_node_leaf(d_c_i, graph_simple)]
-            not_leaf_nodes_i = [d_c_i for d_c_i in direct_connections_i if d_c_i not in leaf_nodes_i]
+            leaf_nodes = [
+                d_c for d_c in direct_connections if is_node_leaf(d_c)]
+            not_leaf_nodes = [
+                d_c for d_c in direct_connections if d_c not in leaf_nodes]
 
-            if (len(leaf_nodes_i) == len(direct_connections_i - 1)):
-                for l_n_i in leaf_nodes_i:
-                    add_to_route(l_n_i, route, visited, equivalent_platforms)
-                    distance_sum += connections_complete[l_n_i]
-            
+            if (len(leaf_nodes) == len(direct_connections - 1)):
+                for l_n in leaf_nodes:
+                    add_to_route(l_n, route, visited)
+                    distance_sum += connections_complete[l_n]
+
             # TODO: stack stuff
-            next_platform_i = not_leaf_nodes_i[0]
+            next = not_leaf_nodes[0]
 
-        add_to_route(next_platform_i, route, visited, equivalent_platforms)
-        distance_sum += connections_complete[next_platform_i]
-
+        add_to_route(next, route, visited)
+        distance_sum += connections_complete[next]
 
     print(f'manual 1: {sample_route_distance1:.1f}')
     print(f'manual 2: {sample_route_distance2:.1f}')
     print(f'guloso: {distance_sum:.1f}')
+
+    print('rota gulosa: ' + '\n'.join(route_index2name(route)))
