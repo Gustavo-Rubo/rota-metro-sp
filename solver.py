@@ -24,9 +24,7 @@ def read_graph(filename):
 
         PLATFORM_NAMES = np.unique(PLATFORM_NAMES)
 
-        GRAPH_SIMPLE = np.ones(
-            [len(PLATFORM_NAMES), len(PLATFORM_NAMES)]) * np.inf
-        # for i in range(len(GRAPH_SIMPLE)): GRAPH_SIMPLE[i][i] = 0
+        GRAPH_SIMPLE = np.ones([len(PLATFORM_NAMES), len(PLATFORM_NAMES)]) * np.inf
 
         file.seek(0)
         for row in reader:
@@ -67,8 +65,7 @@ def route_name2index(route_names):
     return [name2index(name) for name in route_names]
 
 
-def route_index2name(route_names):
-    # TODO
+def route_index2name(route):
     return [index2name(index) for index in route]
 
 
@@ -86,21 +83,22 @@ def measure_distance(route):
     current = route[0]
     for next in route[1:]:
         distance += GRAPH_COMPLETE[current][next]
-        # print(graph[current_i][next_i], current_i, next_i)
-
         current = next
 
     return distance
 
 
-def get_next_platforms():
-    # get list of direct unvisited options
-    # if only one option, return that
-    # if leaf nodes + 1 option, return leaf nodes then option
-    # if no direct unvisited, greedy on global
-    # if more than one unvisited non leaf option, store [distance, route, visited, [options]] in the stack
+def get_next_options(path_options, visited):
+    next_options = []
+    path_options = [p_o for p_o in path_options if p_o != []]
+    for p_o in path_options:
+        for node in p_o:
+            if node not in visited:
+                next_options.append(node)
+                break
+    next_options = list(set(next_options))
 
-    return
+    return next_options
 
 
 def add_to_route(next, route, visited):
@@ -114,6 +112,7 @@ if __name__ == "__main__":
     global PLATFORM_NAMES
     global GRAPH_SIMPLE
     global GRAPH_COMPLETE
+    global GRAPH_PATHS
     global EQUIVALENT_PLATFORMS
 
     PLATFORM_NAMES = []
@@ -125,65 +124,99 @@ if __name__ == "__main__":
     # filename = path.join('problems', 'blue_green.csv')
 
     read_graph(filename)
-    GRAPH_COMPLETE = dijkstra(GRAPH_SIMPLE)
+    GRAPH_COMPLETE, GRAPH_PATHS = dijkstra(GRAPH_SIMPLE)
     memoize_equivalent_platforms()
 
-    # sample_route = sample_routes.BLUE_GREEN
+    # sample_route1 = route_name2index(sample_routes.BLUE_GREEN)
     sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
     sample_route_distance1 = measure_distance(sample_route1)
     sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
     sample_route_distance2 = measure_distance(sample_route2)
 
+    start = name2index('7 - rubi,jundiaí')
+    # start = name2index('1 - azul,tucuruvi')
     distance_sum = 0
     route = []
     visited = []
-    start = name2index('7 - rubi,jundiaí')
-    # start = '1 - azul,tucuruvi'
 
-    add_to_route(start, route, visited)
     solutions = []
-    stack = []
+    stack_routes = []
+    stack_next = []
+    stack_distances = []
+    stack_visited = []
 
-    while (len(visited) < len(PLATFORM_NAMES)):
-        # get list of direct unvisited options
-        # if only one option, return that
-        # if no direct unvisited (no options), greedy on global
-        # if leaf nodes + 1 option, return leaf nodes then option
-        # if more than one unvisited non leaf option, store [distance, route, visited, [options]] in the stack
-        current = route[-1]
-        next = -1
+    stack_next.append(start)
+    stack_routes.append(route)
+    stack_distances.append(distance_sum)
+    stack_visited.append(visited)
 
-        connections_complete = GRAPH_COMPLETE[current].copy()
-        connections_simple = GRAPH_SIMPLE[current].copy()
-        for v in visited:
-            # this may not be necessary if i make distance infinite directly on the whole graph column every time a station is visited
-            connections_complete[v] = np.inf
-            connections_simple[v] = np.inf
+    loop_counter = 0
+    benchmark_distance = 1100
 
-        direct_connections = np.where(connections_simple != np.inf)[0]
-        if (len(direct_connections) == 1):
-            next = direct_connections[0]
-        elif (len(direct_connections) == 0):
-            next = connections_complete.argmin()
-        else:
-            leaf_nodes = [
-                d_c for d_c in direct_connections if is_node_leaf(d_c)]
-            not_leaf_nodes = [
-                d_c for d_c in direct_connections if d_c not in leaf_nodes]
+    while (len(stack_next) >= 1):
+        if (loop_counter % 50000 == 0):
+            print(f'loops: {loop_counter}\tstack length: {len(stack_next)}')
+        loop_counter += 1
 
-            if (len(leaf_nodes) == len(direct_connections - 1)):
+        current = stack_next.pop()
+        route = stack_routes.pop()
+        distance_sum = stack_distances.pop()
+        visited = stack_visited.pop()
+
+        if (len(route) >= 1):
+            distance_sum += GRAPH_COMPLETE[route[-1]][current]
+        add_to_route(current, route, visited)
+
+        while (len(visited) < len(PLATFORM_NAMES) and distance_sum < benchmark_distance):
+
+            connections_complete = GRAPH_COMPLETE[current].copy()
+            connections_simple = GRAPH_SIMPLE[current].copy()
+            path_options = GRAPH_PATHS[current].copy()
+
+            for v in visited:
+                # this may not be necessary if i make distance infinite directly on the whole graph column every time a station is visited
+                connections_complete[v] = np.inf
+                connections_simple[v] = np.inf
+                path_options[v] = []
+
+            direct_connections = np.where(connections_simple != np.inf)[0]
+            leaf_nodes = [d_c for d_c in direct_connections if is_node_leaf(d_c)]
+            not_leaf_nodes = [d_c for d_c in direct_connections if d_c not in leaf_nodes]
+
+            if (len(leaf_nodes) > 0):
                 for l_n in leaf_nodes:
                     add_to_route(l_n, route, visited)
-                    distance_sum += connections_complete[l_n]
+                    distance_sum += connections_complete[l_n] * 2 + 2
+                    add_to_route(current, route, visited)
 
-            # TODO: stack stuff
-            next = not_leaf_nodes[0]
+            if (len(not_leaf_nodes) == 1):
+                next = not_leaf_nodes[0]
+                add_to_route(next, route, visited)
+                distance_sum += connections_complete[next]
+                current = next
+            else:
+                next_options = get_next_options(path_options, visited)
 
-        add_to_route(next, route, visited)
-        distance_sum += connections_complete[next]
+                stack_next.extend(next_options.copy())
+                for _ in next_options:
+                    stack_distances.append(distance_sum)
+                    stack_routes.append(route.copy())
+                    stack_visited.append(visited.copy())
+
+                break
+
+        # if (len(visited) == len(PLATFORM_NAMES)):
+        if (len(solutions) == 0 or len(route) >= len(solutions[-1][1])):
+            solutions.append([distance_sum, route])
+            print(f'solution distance: {distance_sum}\t solution stations: {len(visited)}')
+            print('\n'.join(route_index2name(route)))
 
     print(f'manual 1: {sample_route_distance1:.1f}')
     print(f'manual 2: {sample_route_distance2:.1f}')
-    print(f'guloso: {distance_sum:.1f}')
 
-    print('rota gulosa: ' + '\n'.join(route_index2name(route)))
+    if (len(solutions) > 0):
+        top_solution = sorted(solutions, key=lambda x: x[0])[0]
+        print(f'solution distance: {top_solution[0]}\t solution stations: {len(top_solution[1])}')
+        print('\n'.join(route_index2name(top_solution[1])))
+    else:
+        print('no solutions found')
