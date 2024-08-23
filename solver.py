@@ -18,12 +18,18 @@ def read_graph(filename):
     global PLATFORM_NAMES
     global GRAPH_SIMPLE
 
-    # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:7]
-    lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
 
-    with open(filename) as file:
-        reader = csv.reader(file, delimiter=',')
-        for row in reader:
+<< << << < HEAD
+ # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:7]
+ lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+== == == =
+ lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:8]
+  # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+>>>>>> > origin/main
+
+ with open(filename) as file:
+      reader = csv.reader(file, delimiter=',')
+       for row in reader:
             if (int(row[0].split(' ')[0]) in lines_filter and int(row[2].split(' ')[0]) in lines_filter):
                 PLATFORM_NAMES.append(','.join([row[0], row[1]]))
                 PLATFORM_NAMES.append(','.join([row[2], row[3]]))
@@ -145,10 +151,10 @@ if __name__ == "__main__":
     memoize_equivalent_platforms()
 
     # sample_route1 = route_name2index(sample_routes.BLUE_GREEN)
-    sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
-    sample_route_distance1 = measure_distance(sample_route1)
-    sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
-    sample_route_distance2 = measure_distance(sample_route2)
+    # sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
+    # sample_route_distance1 = measure_distance(sample_route1)
+    # sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
+    # sample_route_distance2 = measure_distance(sample_route2)
 
     start = name2index('7 - rubi,jundiaí')
     # start = name2index('1 - azul,tucuruvi')
@@ -248,8 +254,8 @@ if __name__ == "__main__":
 
             solutions.append([distance_sum, route])
 
-    print(f'manual 1: {sample_route_distance1:.1f}')
-    print(f'manual 2: {sample_route_distance2:.1f}')
+    # print(f'manual 1: {sample_route_distance1:.1f}')
+    # print(f'manual 2: {sample_route_distance2:.1f}')
 
     if (len(solutions) > 0):
         top_solution = sorted(solutions, key=lambda x: [-len(x[1]), x[0]])[0]
