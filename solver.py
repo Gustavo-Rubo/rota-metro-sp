@@ -5,6 +5,8 @@ import numpy as np
 from dijkstra import dijkstra
 import sample_routes
 
+from animations.Plot import Plot
+
 
 # WHEN TO USE PLATFORM NAMES VS INDEX:
 # names should only be for input and output.
@@ -16,7 +18,7 @@ def read_graph(filename):
     global PLATFORM_NAMES
     global GRAPH_SIMPLE
 
-    # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:10]
+    # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:7]
     lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
 
     with open(filename) as file:
@@ -154,7 +156,7 @@ if __name__ == "__main__":
     route = []
     # TODO: rename to visited_station and visited_platform
     visited = []
-    visited_strict =[]
+    visited_strict = []
 
     solutions = []
     stack_routes = []
@@ -170,7 +172,9 @@ if __name__ == "__main__":
     stack_visited_strict.append(visited_strict)
 
     loop_counter = 0
-    benchmark_distance = 890
+    benchmark_distance = 500
+
+    plot = Plot()
 
     while (len(stack_next) >= 1):
         if (loop_counter % 200000 == 0):
@@ -206,14 +210,17 @@ if __name__ == "__main__":
             if (len(leaf_nodes) > 0):
                 for l_n in leaf_nodes:
                     add_to_route(l_n, route, visited, visited_strict)
+                    plot.update(route)
                     distance_sum += connections_complete[l_n]
                     if (len(visited) < len(PLATFORM_NAMES)):
                         add_to_route(current, route, visited, visited_strict)
+                        plot.update(route)
                         distance_sum += connections_complete[l_n]
 
             if (len(not_leaf_nodes) == 1):
                 next = not_leaf_nodes[0]
                 add_to_route(next, route, visited, visited_strict)
+                plot.update(route)
                 distance_sum += connections_complete[next]
                 current = next
             else:
@@ -223,7 +230,7 @@ if __name__ == "__main__":
                 next_options = get_next_options(path_options, visited, visited_strict)
                 # this sorting is complete heuristics
                 next_options_prioritized = sorted(next_options, key=lambda x: -len(path_options[x]))
-                
+
                 stack_next.extend(next_options_prioritized.copy()[-3:])
                 for _ in next_options[-3:]:
                     stack_distances.append(distance_sum)
@@ -234,7 +241,7 @@ if __name__ == "__main__":
                 break
 
         if (len(visited) == len(PLATFORM_NAMES) and distance_sum <= benchmark_distance):
-        # if (len(solutions) == 0 or len(route) >= len(solutions[-1][1])):
+            # if (len(solutions) == 0 or len(route) >= len(solutions[-1][1])):
             if (distance_sum <= min([benchmark_distance] + [s[0] for s in solutions])+5):
                 print(f'solution distance: {distance_sum}\t solution stations: {len(visited)}')
                 print('\n'.join(route_index2name(route)))
