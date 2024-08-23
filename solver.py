@@ -16,8 +16,8 @@ def read_graph(filename):
     global PLATFORM_NAMES
     global GRAPH_SIMPLE
 
-    # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:10]
-    lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+    lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15][:8]
+    # lines_filter = [7, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 15]
 
     with open(filename) as file:
         reader = csv.reader(file, delimiter=',')
@@ -143,10 +143,10 @@ if __name__ == "__main__":
     memoize_equivalent_platforms()
 
     # sample_route1 = route_name2index(sample_routes.BLUE_GREEN)
-    sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
-    sample_route_distance1 = measure_distance(sample_route1)
-    sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
-    sample_route_distance2 = measure_distance(sample_route2)
+    # sample_route1 = route_name2index(sample_routes.COMPLETE_MANUAL1)
+    # sample_route_distance1 = measure_distance(sample_route1)
+    # sample_route2 = route_name2index(sample_routes.COMPLETE_MANUAL2)
+    # sample_route_distance2 = measure_distance(sample_route2)
 
     start = name2index('7 - rubi,jundiaí')
     # start = name2index('1 - azul,tucuruvi')
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     stack_visited_strict.append(visited_strict)
 
     loop_counter = 0
-    benchmark_distance = 890
+    benchmark_distance = 870
 
     while (len(stack_next) >= 1):
         if (loop_counter % 200000 == 0):
@@ -241,8 +241,8 @@ if __name__ == "__main__":
 
             solutions.append([distance_sum, route])
 
-    print(f'manual 1: {sample_route_distance1:.1f}')
-    print(f'manual 2: {sample_route_distance2:.1f}')
+    # print(f'manual 1: {sample_route_distance1:.1f}')
+    # print(f'manual 2: {sample_route_distance2:.1f}')
 
     if (len(solutions) > 0):
         top_solution = sorted(solutions, key=lambda x: [-len(x[1]), x[0]])[0]
